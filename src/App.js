@@ -1,6 +1,10 @@
 import React from 'react'
-// import * as BooksAPI from './BooksAPI'
+import * as  BooksAPI from './BooksAPI'
+import  ListBooks from './ListBooks'
 import './App.css'
+import SeacrchBook from './SeacrchBook'
+
+import { Route } from 'react-router-dom'
 
 class BooksApp extends React.Component {
   state = {
@@ -10,12 +14,63 @@ class BooksApp extends React.Component {
      * users can use the browser's back and forward buttons to navigate between
      * pages, as well as provide a good URL they can bookmark and share.
      */
-    showSearchPage: false
+    books:[]
+
   }
 
-  render() {
+
+  componentDidMount() {
+      BooksAPI.getAll().then((books)=>{
+        this.setState({books})
+      })
+  }
+
+
+
+  changeShelf=(book,shelf)=>{
+
+      let a=this.state.books.filter(b=>b.id==book.id);
+      a[0] ?(a[0].shelf=shelf) : (a[0]=book,a[0].shelf=shelf)
+      let b=this.state.books.filter(b=>b.id!=book.id);
+      let c= a.concat(b)
+      this.setState({
+        books:c
+      })
+      BooksAPI.update(book,shelf);
+    }
+
+  getshelf=(book)=>{
+    let a=this.state.books.filter(b=>b.id==book.id);
+    return a[0] ? a[0].shelf : "none"
+
+  }
+
+
+  render()  {
+
     return (
       <div className="app">
+          <Route  exact path="/" render={()=>(
+            <div>
+                <ListBooks books={this.state.books}
+                          onchangeShelf={this.changeShelf}
+                  />
+              </div>
+          )} />
+
+          <Route path="/search" c render={()=>(
+              <SeacrchBook  onchangeShelf={this.changeShelf}
+                             getshelf={this.getshelf}
+              />
+            )}/>
+        </div>
+      )
+    }
+}
+
+export default BooksApp
+
+    /*  <div className="app">
         {this.state.showSearchPage ? (
           <div className="search-books">
             <div className="search-books-bar">
@@ -28,7 +83,7 @@ class BooksApp extends React.Component {
 
                   However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
                   you don't find a specific author or title. Every search is limited by search terms.
-                */}
+                }
                 <input type="text" placeholder="Search by title or author"/>
 
               </div>
@@ -201,6 +256,4 @@ class BooksApp extends React.Component {
       </div>
     )
   }
-}
-
-export default BooksApp
+} */
